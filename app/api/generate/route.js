@@ -50,7 +50,7 @@ To empower users to learn efficiently and effectively through well-crafted, pers
 
 ---
 
-**Note:** Ensure all generated content adheres to the guidelines and enhances the user’s learning journey and make the answer short.
+**Note:** Ensure all generated content adheres to the guidelines and enhances the users learning journey and make the answer short.
 
 Return in the following JSON format
 {
