@@ -47,7 +47,7 @@ export default function Flashcard() {
     }
 
     getFlashcard();
-  }, [search]);
+  }, [search, user]);
 
   const handleCardClick = (id) => {
     setFlipped((prev) => ({
