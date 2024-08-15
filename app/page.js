@@ -1,95 +1,157 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import getStripe from "@/utils/get-strips";
+import { motion } from "framer-motion";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import styles from "./Home.module.css";
+import {
+  AppBar,
+  Box,
+  Button,
+  Container,
+  Grid,
+  Toolbar,
+  Typography,
+} from "@mui/material";
+import Head from "next/head";
 
 export default function Home() {
+  const handleSubmit = async () => {
+    const checkoutSession = await fetch("/api/checkout_session", {
+      method: "POST",
+      headers: {
+        origin: "http://localhost:3000",
+      },
+    });
+
+    const checkoutSessionJson = await checkoutSession.json();
+
+    if (checkoutSession.statusCode === 500) {
+      console.log(checkoutSession.message);
+      return;
+    }
+
+    const stripe = await getStripe();
+    const { error } = await stripe.redirectToCheckout({
+      sessionId: checkoutSessionJson.id,
+    });
+
+    if (error) {
+      console.warn(error.message);
+    }
+  };
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <>
+      <Box className={styles.navbar}>
+        <Typography variant="h5" sx={{ color: "#836eff" }}>
+          Flashcard Saas
+        </Typography>
+        <SignedOut>
+          <div className={styles.navLinks}>
+            <motion.a
+              href="/login"
+              className={styles.navLinks}
+              whileHover={{ color: "#836eff" }}
+            >
+              Login
+            </motion.a>
+            <motion.a
+              href="/signup"
+              className={styles.navLinks}
+              whileHover={{ color: "#836eff" }}
+            >
+              Sign Up
+            </motion.a>
+          </div>
+        </SignedOut>
+
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+      </Box>
+
+      <Container maxWidth="lg">
+        <motion.div
+          className={styles.hero}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5 }}
+        >
+          <Typography variant="h1" className={styles.title}>
+            Flashcard SaaS
+          </Typography>
+          <Typography
+            variant="h5"
+            className={styles.subtitle}
+            gutterBottom
+            marginBottom={4}
           >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+            The easiest way to create flashcards from your text
+          </Typography>
+          <SignedIn>
+            <motion.a
+              href="/generate"
+              className={styles.cta}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Get Started
+            </motion.a>
+          </SignedIn>
+          <SignedOut>
+            <motion.a
+              href="/sign-in"
+              className={styles.cta}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Get Started
+            </motion.a>
+          </SignedOut>
+        </motion.div>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+        <Box className={styles.featureContainer}>
+          <Box className={styles.feature}>
+            <Typography variant="h6">Easy Text Input</Typography>
+            <Typography>
+              Simply input the text and let our software handle the rest.
+            </Typography>
+          </Box>
+          <Box className={styles.feature}>
+            <Typography variant="h6">Advanced AI</Typography>
+            <Typography>
+              Generate flashcards with cutting-edge AI technology.
+            </Typography>
+          </Box>
+          <Box className={styles.feature}>
+            <Typography variant="h6">Customizable</Typography>
+            <Typography>
+              Fully customize your flashcards to suit your needs.
+            </Typography>
+          </Box>
+        </Box>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        <Box className={styles.pricingContainer}>
+          <motion.div
+            className={styles.pricingBox}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Typography variant="h5">Basics</Typography>
+            <Typography variant="h6">$5/month</Typography>
+            <Typography>Basic features with limited access</Typography>
+          </motion.div>
+          <motion.div
+            className={styles.pricingBox}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleSubmit()}
+          >
+            <Typography variant="h5">Pro</Typography>
+            <Typography variant="h6">$10/month</Typography>
+            <Typography>Unlimited flashcards with advanced features</Typography>
+          </motion.div>
+        </Box>
+      </Container>
+    </>
   );
 }
