@@ -2,6 +2,7 @@
 import getStripe from "@/utils/get-strips";
 import { motion } from "framer-motion";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/react";
 import styles from "./Home.module.css";
 import {
   AppBar,
@@ -152,6 +153,7 @@ export default function Home() {
           </motion.div>
         </Box>
       </Container>
+      <Analytics />
     </>
   );
 }
