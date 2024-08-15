@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Flashcards() {
+  const router = useRouter();
   const { isLoaded, isSignedIn, user } = useUser();
   const [flashcards, setFlashcards] = useState([]);
 
@@ -40,8 +41,6 @@ export default function Flashcards() {
   if (!isLoaded || !isSignedIn) {
     return <></>;
   }
-
-  const router = useRouter();
 
   const handleCardClick = (id) => {
     router.push(`/flashcard?id=${id}`);
