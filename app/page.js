@@ -49,14 +49,14 @@ export default function Home() {
         <SignedOut>
           <div className={styles.navLinks}>
             <motion.a
-              href="/login"
+              href="/sign-in"
               className={styles.navLinks}
               whileHover={{ color: "#836eff" }}
             >
               Login
             </motion.a>
             <motion.a
-              href="/signup"
+              href="/sign-up"
               className={styles.navLinks}
               whileHover={{ color: "#836eff" }}
             >
