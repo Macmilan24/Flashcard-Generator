@@ -1,6 +1,6 @@
 "use client";
 import getStripe from "@/utils/get-strips";
-import { Box, CircularProgress, Container, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Container, Typography } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -19,7 +19,7 @@ const ResultPage = () => {
 
       try {
         const res = await fetch(
-          `/api/checkout_session?session_id=${session_id}`
+          `/api/checkout?session_id=${session_id}`
         );
         const sessionData = await res.json();
 
@@ -84,16 +84,26 @@ const ResultPage = () => {
               We have received your payment. you will receive an email with the
               order details shortly
             </Typography>
+            <a href="/">
+              <Button sx={{mt:10}}>
+                Back to Home
+              </Button>
+            </a>
           </Box>
         </>
       ) : (
         <>
           {" "}
           <Typography variant="h4">payment Failed</Typography>
-          <Box sx={{ mt: 22 }}>
+          <Box sx={{ mt: 22}}>
             <Typography variant="body1">
               Your payment was not Sucessful. please Try again
             </Typography>
+            <a href="/">
+              <Button sx={{mt:10}}>
+                Back to Home
+              </Button>
+            </a>
           </Box>
         </>
       )}
