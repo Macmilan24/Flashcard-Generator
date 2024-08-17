@@ -1,8 +1,12 @@
 import { Box, Container, Typography } from "@mui/material";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import getStripe from "@/utils/get-strips";
+import { useUser } from "@clerk/nextjs";
 
 export default function Pricing() {
   const [hovered, setHovered] = useState(null);
+  const router = useRouter();
 
   const handleMouseEnter = (index) => {
     setHovered(index);
@@ -10,6 +14,42 @@ export default function Pricing() {
 
   const handleMouseLeave = () => {
     setHovered(null);
+  };
+
+  const { user } = useUser();
+
+  const handleSubmit = async (selectedPlanId) => {
+    try {
+      const response = await fetch("/api/checkout_session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          plan: { title: selectedPlanId },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      const session = await response.json();
+
+      const stripe = await getStripe();
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (error) {
+        console.error("Stripe error:", error.message);
+      } else {
+        router.push("/");
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
   };
 
   return (
@@ -25,34 +65,32 @@ export default function Pricing() {
         Choose a plan that works best for you and your team.
       </Typography>
       <Box className="flex flex-col md:flex-row justify-between items-center space-y-6 md:space-y-0 md:space-x-4">
-        {/* Plan Card */}
         {[
           {
             title: "Basic",
+            price: "Free",
+            features: [
+              "Get started with Text",
+              "Limited features",
+              "Up to 5 Flashcards per day",
+            ],
+            priceId: null, // No Stripe payment for free plan
+          },
+          {
+            title: "Pro",
+            price: "$5 / user",
+            features: [
+              "All features",
+              "Flexible usage",
+              "25 Flashcards per day",
+            ],
+            priceId: "Pro", // Replace with your Stripe Price ID
+          },
+          {
+            title: "Expert",
             price: "$10 / user",
-            features: [
-              "Get started with messaging",
-              "Flexible team meetings",
-              "5 TB cloud storage",
-            ],
-          },
-          {
-            title: "Startup",
-            price: "$24 / user",
-            features: [
-              "All features in Basic",
-              "Flexible call scheduling",
-              "15 TB cloud storage",
-            ],
-          },
-          {
-            title: "Enterprise",
-            price: "$35 / user",
-            features: [
-              "All features in Startup",
-              "Growth oriented",
-              "Unlimited cloud storage",
-            ],
+            features: ["All features in Pro", "Full usage", "Unlimited cards"],
+            priceId: "Expert", // Replace with your Stripe Price ID
           },
         ].map((plan, index) => (
           <Box
@@ -70,7 +108,7 @@ export default function Pricing() {
             </Typography>
             <Typography className="text-gray-500 mb-4">{plan.price}</Typography>
             <ul
-              className={`space-y-2 mb-6 ${
+              className={`space-y-2 text-left mb-6 ${
                 hovered === index ? "text-white" : "text-gray-600"
               }`}
             >
@@ -79,11 +117,12 @@ export default function Pricing() {
               ))}
             </ul>
             <button
+              onClick={() => handleSubmit(plan.priceId)}
               className={`px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors ${
                 hovered === index ? "border border-white" : ""
               }`}
             >
-              Choose Plan →
+              {plan.priceId ? "Choose Plan →" : "Get Started"}
             </button>
           </Box>
         ))}

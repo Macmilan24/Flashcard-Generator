@@ -34,7 +34,7 @@ export default function Hero() {
       <div className="w-full md:w-2/5 flex justify-center">
         <SignedOut>
           <Link href={"/sign-in"}>
-            <ShimmerButton className="shadow-2xl">
+            <ShimmerButton className="shadow-2xl z-10">
               <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
                 Get Started {">"}
               </span>
@@ -42,18 +42,17 @@ export default function Hero() {
           </Link>
         </SignedOut>
         <SignedIn>
-          <ShimmerButton className="shadow-2xl">
-            <a
-              className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg"
-              href="/generate"
-            >
-              Get Started {""}
-            </a>
-          </ShimmerButton>
+          <Link href={"/pricingpage"}>
+            <ShimmerButton className="shadow-2xl z-10">
+              <span className="whitespace-pre-wrap text-center text-sm font-medium leading-none tracking-tight text-white dark:from-white dark:to-slate-900/10 lg:text-lg">
+                Get Started {">"}
+              </span>
+            </ShimmerButton>
+          </Link>
         </SignedIn>
       </div>
       <Particles
-        className="absolute inset-0"
+        className="absolute inset-0 z-0"
         quantity={600}
         ease={50}
         color={color}

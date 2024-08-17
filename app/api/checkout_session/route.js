@@ -1,43 +1,52 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
+import { getAuth } from "@clerk/nextjs/server";
+import { db } from "@/firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-const formatAmountForStripe = (amout) => {
-  return Math.round(amout * 100);
-};
+export async function POST(req) {
+  const { plan } = await req.json();
+  const { userId } = getAuth(req);
 
-export async function GET(req) {
-  const searchParams = req.nextUrl.searchParams;
-  const session_id = searchParams.get("session_id");
+  const priceDetailsMap = {
+    Pro: {
+      unit_amount: 500, // $5 in cents
+      currency: "usd",
+      interval: "month",
+    },
+    Expert: {
+      unit_amount: 1000, // $10 in cents
+      currency: "usd",
+      interval: "month",
+    },
+  };
 
-  try {
-    const checkoutSession = await stripe.checkout.sessions.retrieve(session_id);
-    return NextResponse.json(checkoutSession);
-  } catch (err) {
-    console.error("error retriving checkout session", err);
+  // Validate the selected plan
+  const priceDetails = priceDetailsMap[plan.title];
+
+  if (!priceDetails) {
     return NextResponse.json(
-      { err: { message: err.message } },
-      { status: 500 }
+      { error: { message: "Invalid plan selected." } },
+      { status: 400 }
     );
   }
-}
 
-export async function POST(req) {
+  // Define Stripe checkout session parameters
   const params = {
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [
       {
         price_data: {
-          currency: "usd",
+          currency: priceDetails.currency,
           product_data: {
-            name: "Pro Subscription",
+            name: `${plan.title} Plan`,
           },
-          unit_amount: formatAmountForStripe(10),
+          unit_amount: priceDetails.unit_amount,
           recurring: {
-            interval: "month",
-            interval_count: 1,
+            interval: priceDetails.interval,
           },
         },
         quantity: 1,
@@ -50,7 +59,31 @@ export async function POST(req) {
       "origin"
     )}/result?session_id={CHECKOUT_SESSION_ID}`,
   };
-  const checkoutSession = await stripe.checkout.sessions.create(params);
 
-  return NextResponse.json(checkoutSession);
+  try {
+    // Create the Stripe checkout session
+    const checkoutSession = await stripe.checkout.sessions.create(params);
+
+    // Store subscription data in Firebase after successful session creation
+    await setDoc(
+      doc(db, "users", userId),
+      {
+        subscription: {
+          plan: plan.title,
+          status: "active",
+          subscribedAt: new Date().toISOString(),
+        },
+      },
+      { merge: true }
+    );
+
+    // Return the checkout session
+    return NextResponse.json(checkoutSession);
+  } catch (err) {
+    console.error("Error creating checkout session", err);
+    return NextResponse.json(
+      { error: { message: err.message } },
+      { status: 500 }
+    );
+  }
 }
