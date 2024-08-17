@@ -1,5 +1,6 @@
 "use client";
 
+import Navbar from "@/components/navbar/Navbar";
 import { db } from "@/firebase";
 import { useUser } from "@clerk/nextjs";
 import {
@@ -15,7 +16,6 @@ import {
   DialogContentText,
   DialogTitle,
   Grid,
-  Paper,
   TextField,
   Typography,
 } from "@mui/material";
@@ -40,16 +40,16 @@ export default function Generate() {
       });
       const data = await response.json();
       setFlashcards(data);
+      setFlipped(new Array(data.length).fill(false)); // Initialize flipped state for all cards
     } catch (error) {
       console.error("Error generating flashcards:", error);
     }
   };
 
-  const handleCardClick = (id) => {
-    setFlipped((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+  const handleCardClick = (index) => {
+    setFlipped((prev) =>
+      prev.map((isFlipped, i) => (i === index ? !isFlipped : isFlipped))
+    );
   };
 
   const handleOpen = () => {
@@ -73,7 +73,7 @@ export default function Generate() {
       const collections = docSnap.data().flashcards || [];
 
       if (collections.find((f) => f.name === name)) {
-        alert("flashcard collection with the same name already exists.");
+        alert("Flashcard collection with the same name already exists.");
         return;
       } else {
         collections.push(name);
@@ -95,18 +95,14 @@ export default function Generate() {
   };
 
   return (
-    <Container maxWidth="md">
-      <Box
-        sx={{
-          mt: 4,
-          mb: 6,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
+    <div>
+      <Navbar />
+      <div
+        className="mt-4 mb-6 pt-16 px-3 md:px-16 flex flex-col items-center
+        "
       >
-        <Typography variant="h4">Generate Flashcards</Typography>
-        <Paper sx={{ p: 4, width: "100%" }}>
+        <h4 className=" text-lg md:text-5xl">Generate Flashcards </h4>
+        <Card sx={{ p: 4, width: "100%", boxShadow: 3 }}>
           <TextField
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -127,11 +123,11 @@ export default function Generate() {
           >
             Submit
           </Button>
-        </Paper>
-      </Box>
+        </Card>
+      </div>
 
       {flashcards.length > 0 && (
-        <Box sx={{ mt: 4 }}>
+        <div className=" mt-4 px-3 md:px-16">
           <Typography variant="h5" gutterBottom>
             Flashcard Preview
           </Typography>
@@ -195,7 +191,7 @@ export default function Generate() {
               Save
             </Button>
           </Box>
-        </Box>
+        </div>
       )}
 
       <Dialog open={open} onClose={handleClose}>
@@ -220,6 +216,6 @@ export default function Generate() {
           <Button onClick={saveFlashcards}>Save</Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </div>
   );
 }
